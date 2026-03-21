@@ -1156,7 +1156,7 @@ function sendOrderToWhatsApp() {
     itemLines,
     ``,
     `💰 *Bill Summary*`,
-    `Item Total:    ₹${itemTotal}`,
+    `Item Total:    ₹${itemTotal}` + ' + Delivery Fees',
     state.cart.couponDiscount > 0
       ? `Coupon (${state.cart.couponCode}): -₹${state.cart.couponDiscount}`
       : null,
