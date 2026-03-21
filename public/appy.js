@@ -1,81 +1,6 @@
 // =====================================================
-// FRESHCATCH - SEAFOOD QUICK COMMERCE APPLICATION
+// THE FISH MERCHNAT- SEAFOOD QUICK COMMERCE APPLICATION
 // =====================================================
-
-// =====================================================
-// CONFIG — change this to your WhatsApp number
-// Format: country code + number, no spaces or +
-// Example: India 91 + 9876543210 → '919876543210'
-// =====================================================
-const WHATSAPP_NUMBER = '918849940953'
-
-// =====================================================
-// GPS / REAL-TIME LOCATION
-// =====================================================
-
-function requestGPSLocation(onSuccess) {
-  if (!navigator.geolocation) {
-    showToast('Geolocation is not supported by your browser', 'error')
-    return
-  }
-  showToast('Fetching your location...', 'success')
-  navigator.geolocation.getCurrentPosition(
-    async (pos) => {
-      const { latitude, longitude } = pos.coords
-      try {
-        // Free reverse-geocode via OpenStreetMap Nominatim
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}&zoom=18&addressdetails=1`,
-          { headers: { 'Accept-Language': 'en' } },
-        )
-        const data = await res.json()
-        const a = data.address || {}
-
-        // Build a human-readable address from the parts that exist
-        const parts = [
-          a.house_number,
-          a.road || a.pedestrian || a.footway,
-          a.neighbourhood || a.suburb,
-          a.city || a.town || a.village || a.county,
-          a.state,
-        ].filter(Boolean)
-
-        const address = parts.join(', ')
-        const pincode = a.postcode || ''
-        const city = a.city || a.town || a.village || a.county || 'India'
-
-        // Save to app state so cart footer updates too
-        window.appData.deliveryLocation = {
-          address,
-          pincode,
-          city,
-          latitude,
-          longitude,
-        }
-        const display = city + (pincode ? `, ${pincode}` : '')
-        const headerEl = document.getElementById('delivery-address')
-        if (headerEl) headerEl.textContent = display
-
-        showToast('Location detected!', 'success')
-        if (typeof onSuccess === 'function') onSuccess({ address, pincode })
-      } catch (e) {
-        showToast('Could not read address. Please enter manually.', 'error')
-      }
-    },
-    (err) => {
-      const msgs = {
-        1: 'Location permission denied. Please allow access in your browser settings.',
-        2: 'Location unavailable. Please enter address manually.',
-        3: 'Location request timed out. Please try again.',
-      }
-      showToast(
-        msgs[err.code] || 'Location error. Please enter manually.',
-        'error',
-      )
-    },
-    { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 },
-  )
-}
 
 // State Management
 let state = {
@@ -139,9 +64,6 @@ function navigateTo(page, data = null) {
   showPage(page, true, data)
 }
 
-// Pages where the floating cart button must be hidden
-const HIDE_CART_BTN_PAGES = ['cart', 'checkout']
-
 function showPage(page, pushState = true, data = null) {
   // Hide all pages
   document
@@ -172,17 +94,6 @@ function showPage(page, pushState = true, data = null) {
     setTimeout(() => {
       document.getElementById('search-input')?.focus()
     }, 100)
-  }
-
-  // Hide floating cart on cart & checkout so it never covers action buttons
-  const floatingCart = document.getElementById('floating-cart')
-  if (floatingCart) {
-    const totalItems = state.cart.items.reduce(
-      (sum, item) => sum + item.quantity,
-      0,
-    )
-    const shouldShow = totalItems > 0 && !HIDE_CART_BTN_PAGES.includes(page)
-    floatingCart.style.display = shouldShow ? 'flex' : 'none'
   }
 
   // Scroll to top
@@ -517,14 +428,6 @@ function openProduct(productId) {
   const cartItem = state.cart.items.find((item) => item.id === product.id)
   const quantity = cartItem ? cartItem.quantity : 0
 
-  //   <div class="delivery-info">
-  //       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-  //           <circle cx="12" cy="12" r="10"/>
-  //           <path d="M12 6v6l4 2"/>
-  //       </svg>
-  //       <span>${product.deliveryTime}</span>
-  //   </div>
-
   const container = document.getElementById('product-detail')
   container.innerHTML = `
         <div class="product-detail-images">
@@ -544,8 +447,8 @@ function openProduct(productId) {
             `
                 : ''
             }
-            </div>
-            <div class="product-detail-info">
+        </div>
+        <div class="product-detail-info">
             ${product.badge ? `<span class="product-badge ${product.badge === 'bestseller' ? 'bestseller' : product.badge === 'new' ? 'new' : ''}" style="position: static; margin-bottom: 12px;">${product.badge.toUpperCase()}</span>` : ''}
             <h1 class="product-detail-name">${product.name}</h1>
             <p class="product-detail-desc">${product.description}</p>
@@ -577,6 +480,13 @@ function openProduct(productId) {
                 }
             </div>
             
+            <div class="delivery-info">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <path d="M12 6v6l4 2"/>
+                </svg>
+                <span>${product.deliveryTime}</span>
+            </div>
             
             <div class="product-highlights">
                 <h4>Why you'll love it</h4>
@@ -761,12 +671,10 @@ function updateCartUI() {
     0,
   )
 
-  // Update floating cart — hide on cart/checkout pages so it never blocks action buttons
+  // Update floating cart
   const floatingCart = document.getElementById('floating-cart')
   if (floatingCart) {
-    const onBlockedPage = HIDE_CART_BTN_PAGES.includes(state.currentPage)
-    floatingCart.style.display =
-      totalItems > 0 && !onBlockedPage ? 'flex' : 'none'
+    floatingCart.style.display = totalItems > 0 ? 'flex' : 'none'
   }
 
   document.getElementById('cart-badge').textContent = totalItems
@@ -811,47 +719,12 @@ function renderCartPage() {
   const deliveryOption = window.appData.deliveryOptions.find(
     (o) => o.id === state.deliveryOption,
   )
-  const deliveryFee = deliveryOption?.fee || 0
+  const deliveryFee = deliveryOption?.fee || 39
+  const packingFee = 10
   const savings = originalTotal - itemTotal + state.cart.couponDiscount
-  const totalAmount = itemTotal - state.cart.couponDiscount
-
-  //   <button class="change-slot-btn">
-  //       Change Slot
-  //       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-  //           <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-  //           <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-  //       </svg>
-  //   </button>
-
-  // <div class="bill-row">
-  //     <span class="label">Delivery Fee</span>
-  //     <span class="value">${deliveryFee === 0 ? '<span style="color:var(--accent)">Free</span>' : '₹' + deliveryFee}</span>
-  // </div>
-
-  //   <div class="cart-offers">
-  //       <h4>Offers & Benefits</h4>
-  //       <button class="apply-coupon-btn" onclick="openCouponModal()">
-  //           <div class="left">
-  //               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-  //                   <path d="M20 6L9 17l-5-5"/>
-  //               </svg>
-  //               <span>${state.cart.couponCode ? `Code ${state.cart.couponCode} applied` : 'Apply Coupon'}</span>
-  //           </div>
-  //           <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-  //               <path d="M9 18l6-6-6-6"/>
-  //           </svg>
-  //       </button>
-  //       <div class="wallet-option">
-  //           <div class="left">
-  //               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-  //                   <rect x="1" y="4" width="22" height="16" rx="2"/>
-  //                   <line x1="1" y1="10" x2="23" y2="10"/>
-  //               </svg>
-  //               <span>FreshCatch Wallet Balance: <strong>₹${window.appData.currentUser.walletBalance || 0}</strong></span>
-  //           </div>
-  //           <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
-  //       </div>
-  //   </div>
+  const gst = Math.round(itemTotal * 0.05)
+  const totalAmount =
+    itemTotal + deliveryFee + packingFee + gst - state.cart.couponDiscount
 
   container.innerHTML = `
         <div class="cart-delivery-slot">
@@ -860,12 +733,16 @@ function renderCartPage() {
                     <circle cx="12" cy="12" r="10"/>
                     <path d="M12 6v6l4 2"/>
                 </svg>
-                <span><strong></strong>order will be delivered within 2 hrs</span>
+                <span><strong>Tomorrow</strong> by 6 AM - 8 AM</span>
             </div>
             <button class="change-slot-btn">
-                
+                Change Slot
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
             </button>
-            </div>
+        </div>
         
         <div class="cart-items">
             ${state.cart.items
@@ -894,6 +771,30 @@ function renderCartPage() {
               .join('')}
         </div>
         
+        <div class="cart-offers">
+            <h4>Offers & Benefits</h4>
+            <button class="apply-coupon-btn" onclick="openCouponModal()">
+                <div class="left">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 6L9 17l-5-5"/>
+                    </svg>
+                    <span>${state.cart.couponCode ? `Code ${state.cart.couponCode} applied` : 'Apply Coupon'}</span>
+                </div>
+                <svg class="chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 18l6-6-6-6"/>
+                </svg>
+            </button>
+            <div class="wallet-option">
+                <div class="left">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="1" y="4" width="22" height="16" rx="2"/>
+                        <line x1="1" y1="10" x2="23" y2="10"/>
+                    </svg>
+                    <span>FreshCatch Wallet Balance: <strong>₹${window.appData.currentUser.walletBalance || 0}</strong></span>
+                </div>
+                <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+            </div>
+        </div>
         
         <div class="bill-summary">
             <h4>Bill summary</h4>
@@ -901,21 +802,30 @@ function renderCartPage() {
                 <span class="label">Item total</span>
                 <span class="value">₹${itemTotal}</span>
             </div>
-            ${
-              state.cart.couponDiscount > 0
-                ? `
-                <div class="bill-row">
-                    <span class="label">Coupon (${state.cart.couponCode})</span>
-                    <span class="value savings">- ₹${state.cart.couponDiscount}</span>
-                </div>
-            `
-                : ''
-            }
+            <div class="bill-row">
+                <span class="label">Delivery Fee</span>
+                <span class="value">₹${deliveryFee}</span>
+            </div>
+            <div class="bill-row">
+                <span class="label">
+                    Packing Fee
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                </span>
+                <span class="value">₹${packingFee}</span>
+            </div>
+            <div class="bill-row">
+                <span class="label">GST (5%)</span>
+                <span class="value">₹${gst}</span>
+            </div>
             ${
               savings > 0
                 ? `
                 <div class="bill-row">
-                    <span class="label">You save</span>
+                    <span class="label">Savings</span>
                     <span class="value savings">- ₹${savings}</span>
                 </div>
             `
@@ -923,7 +833,7 @@ function renderCartPage() {
             }
             <div class="bill-total">
                 <span class="label">Amount to be paid</span>
-                <span class="value">₹${totalAmount} + Delievery</span>
+                <span class="value">₹${totalAmount}</span>
             </div>
         </div>
         
@@ -967,89 +877,77 @@ function renderCheckoutPage() {
   const deliveryOption = window.appData.deliveryOptions.find(
     (o) => o.id === state.deliveryOption,
   )
-  const deliveryFee = deliveryOption?.fee || 0
-  const totalAmount = itemTotal - state.cart.couponDiscount
+  const deliveryFee = deliveryOption?.fee || 39
+  const packingFee = 10
+  const gst = Math.round(itemTotal * 0.05)
+  const totalAmount =
+    itemTotal + deliveryFee + packingFee + gst - state.cart.couponDiscount
 
-  // Pre-fill address only if it came from GPS (not the default "Mumbai, 400001")
-  const savedAddress = window.appData.deliveryLocation?.fromGPS
-    ? window.appData.deliveryLocation.address
-    : ''
-  const savedPincode = window.appData.deliveryLocation?.fromGPS
-    ? window.appData.deliveryLocation.pincode || ''
-    : ''
-
-  // <div class="checkout-section">
-  // <h4>Delivery Options</h4>
-  // <div class="delivery-options">
-  //     ${window.appData.deliveryOptions
-  //       .map(
-  //         (opt) => `
-  //         <div class="delivery-option ${state.deliveryOption === opt.id ? 'selected' : ''}" onclick="selectDeliveryOption('${opt.id}')">
-  //             <div class="radio"></div>
-  //             <div class="delivery-option-info">
-  //                 <span class="delivery-option-title">${opt.name}</span>
-  //                 <span class="delivery-option-desc">${opt.description}</span>
-  //             </div>
-  //             <span class="delivery-option-price">₹${opt.fee}</span>
-  //         </div>
-  //     `,
-  //       )
-  //       .join('')}
-  // </div>
-  // </div>
-
-  //   <button type="button" onclick="fillAddressFromGPS()" style="display:flex;align-items:center;gap:6px;width:100%;padding:10px 14px;margin-bottom:8px;border:1.5px dashed var(--primary);border-radius:8px;background:var(--primary-light);color:var(--primary);font-size:14px;font-weight:500;cursor:pointer;">
-  //       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="width:16px;height:16px;flex-shrink:0;">
-  //           <circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/>
-  //           <line x1="12" y1="2" x2="12" y2="5"/><line x1="12" y1="19" x2="12" y2="22"/>
-  //           <line x1="2" y1="12" x2="5" y2="12"/><line x1="19" y1="12" x2="22" y2="12"/>
-  //       </svg>
-  //       Use my current location
-  //   </button>
-
-  //   <div class="checkout-summary-row">
-  //       <span class="label">Delivery Fee</span>
-  //       <span class="value">${deliveryFee === 0 ? '<span style="color:var(--accent)">Free</span>' : '₹' + deliveryFee}</span>
-  //   </div>
   container.innerHTML = `
         <div class="checkout-section">
             <h4>Delivery Address</h4>
             <div class="form-group">
-                <label>Full Name *</label>
+                <label>Full Name</label>
                 <input type="text" id="checkout-name" placeholder="Enter your full name" value="${window.appData.currentUser.name || ''}">
             </div>
             <div class="form-group">
-                <label>Phone Number *</label>
-                <input type="tel" id="checkout-phone" placeholder="Enter 10-digit mobile number" maxlength="10" value="${window.appData.currentUser.phone?.replace('+91 ', '') || ''}">
+                <label>Phone Number</label>
+                <input type="tel" id="checkout-phone" placeholder="Enter 10-digit mobile number" value="${window.appData.currentUser.phone?.replace('+91 ', '') || ''}">
             </div>
             <div class="form-group">
-                <label>Delivery Address *</label>
-                <textarea id="checkout-address" placeholder="House no., Building name, Street, Area">${savedAddress}</textarea>
+                <label>Complete Address</label>
+                <textarea id="checkout-address" placeholder="House no., Building name, Street, Area">${window.appData.deliveryLocation.address || ''}</textarea>
             </div>
             <div class="form-group">
-                <label>Pincode *</label>
-                <input type="text" id="checkout-pincode" placeholder="Enter 6-digit pincode" maxlength="6" value="${savedPincode}">
-            </div>
-            <div class="form-group">
-                <label>Landmark (optional)</label>
-                <input type="text" id="checkout-landmark" placeholder="Near temple, next to park...">
+                <label>Pincode</label>
+                <input type="text" id="checkout-pincode" placeholder="Enter 6-digit pincode" maxlength="6" value="${window.appData.deliveryLocation.pincode || ''}">
             </div>
         </div>
         
-
+        <div class="checkout-section">
+            <h4>Delivery Options</h4>
+            <div class="delivery-options">
+                ${window.appData.deliveryOptions
+                  .map(
+                    (opt) => `
+                    <div class="delivery-option ${state.deliveryOption === opt.id ? 'selected' : ''}" onclick="selectDeliveryOption('${opt.id}')">
+                        <div class="radio"></div>
+                        <div class="delivery-option-info">
+                            <span class="delivery-option-title">${opt.name}</span>
+                            <span class="delivery-option-desc">${opt.description}</span>
+                        </div>
+                        <span class="delivery-option-price">₹${opt.fee}</span>
+                    </div>
+                `,
+                  )
+                  .join('')}
+            </div>
+        </div>
         
         <div class="checkout-section">
             <h4>Order Summary</h4>
             <div class="checkout-summary">
                 <div class="checkout-summary-row">
-                    <span class="label">Item total (${state.cart.items.length} item${state.cart.items.length !== 1 ? 's' : ''})</span>
+                    <span class="label">Item total (${state.cart.items.length} items)</span>
                     <span class="value">₹${itemTotal}</span>
+                </div>
+                <div class="checkout-summary-row">
+                    <span class="label">Delivery Fee</span>
+                    <span class="value">₹${deliveryFee}</span>
+                </div>
+                <div class="checkout-summary-row">
+                    <span class="label">Packing & Handling</span>
+                    <span class="value">₹${packingFee}</span>
+                </div>
+                <div class="checkout-summary-row">
+                    <span class="label">GST (5%)</span>
+                    <span class="value">₹${gst}</span>
                 </div>
                 ${
                   state.cart.couponDiscount > 0
                     ? `
                     <div class="checkout-summary-row">
-                        <span class="label" style="color: var(--accent);">Coupon (${state.cart.couponCode})</span>
+                        <span class="label" style="color: var(--accent);">Coupon Discount</span>
                         <span class="value" style="color: var(--accent);">- ₹${state.cart.couponDiscount}</span>
                     </div>
                 `
@@ -1057,36 +955,17 @@ function renderCheckoutPage() {
                 }
                 <div class="checkout-summary-total">
                     <span class="label">Total Amount</span>
-                    <span class="value">₹${totalAmount} + Delievery charges</span>
+                    <span class="value">₹${totalAmount}</span>
                 </div>
             </div>
         </div>
-
-        <div class="checkout-section" style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 12px; padding: 16px;">
-            <p style="font-size: 13px; color: #166534; margin: 0;">
-                📲 Your order details will be sent to our WhatsApp. We'll confirm your order and delivery slot shortly.
-            </p>
-        </div>
         
         <div class="checkout-footer">
-            <button class="place-order-btn" onclick="sendOrderToWhatsApp()" style="background: #25D366; display: flex; align-items: center; justify-content: center; gap: 10px;">
-                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 22px; height: 22px; flex-shrink: 0;">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
-                </svg>
-                Send Order on WhatsApp — ₹${totalAmount}
+            <button class="place-order-btn" onclick="placeOrder()">
+                Place Order - ₹${totalAmount}
             </button>
         </div>
     `
-}
-
-// Called by the "Use my current location" button inside checkout
-function fillAddressFromGPS() {
-  requestGPSLocation(({ address, pincode }) => {
-    const addrEl = document.getElementById('checkout-address')
-    const pinEl = document.getElementById('checkout-pincode')
-    if (addrEl) addrEl.value = address
-    if (pinEl && pincode) pinEl.value = pincode
-  })
 }
 
 function selectDeliveryOption(optionId) {
@@ -1094,28 +973,28 @@ function selectDeliveryOption(optionId) {
   renderCheckoutPage()
 }
 
-function sendOrderToWhatsApp() {
-  const name = document.getElementById('checkout-name')?.value.trim()
-  const phone = document.getElementById('checkout-phone')?.value.trim()
-  const address = document.getElementById('checkout-address')?.value.trim()
-  const pincode = document.getElementById('checkout-pincode')?.value.trim()
-  const landmark = document.getElementById('checkout-landmark')?.value.trim()
+function placeOrder() {
+  const name = document.getElementById('checkout-name')?.value
+  const phone = document.getElementById('checkout-phone')?.value
+  const address = document.getElementById('checkout-address')?.value
+  const pincode = document.getElementById('checkout-pincode')?.value
 
-  // Validation
   if (!name || !phone || !address || !pincode) {
     showToast('Please fill all required fields', 'error')
     return
   }
-  if (phone.length !== 10 || !/^\d{10}$/.test(phone)) {
+
+  if (phone.length !== 10) {
     showToast('Please enter a valid 10-digit phone number', 'error')
     return
   }
-  if (pincode.length !== 6 || !/^\d{6}$/.test(pincode)) {
+
+  if (pincode.length !== 6) {
     showToast('Please enter a valid 6-digit pincode', 'error')
     return
   }
 
-  // Totals — no hidden fees, just items + delivery
+  // Calculate totals
   const itemTotal = state.cart.items.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
@@ -1123,60 +1002,19 @@ function sendOrderToWhatsApp() {
   const deliveryOption = window.appData.deliveryOptions.find(
     (o) => o.id === state.deliveryOption,
   )
-  const deliveryFee = deliveryOption?.fee || 0
-  const totalAmount = itemTotal - state.cart.couponDiscount
+  const deliveryFee = deliveryOption?.fee || 39
+  const packingFee = 10
+  const gst = Math.round(itemTotal * 0.05)
+  const totalAmount =
+    itemTotal + deliveryFee + packingFee + gst - state.cart.couponDiscount
 
-  // Build the WhatsApp message
-  const orderId = `ORD${Date.now().toString().slice(-6)}`
-
-  const itemLines = state.cart.items
-    .map(
-      (item) =>
-        `  • ${item.name} × ${item.quantity}  →  ₹${item.price * item.quantity}`,
-    )
-    .join('\n')
-
-  const addressLine = [
-    address,
-    landmark ? `Near: ${landmark}` : '',
-    `Pincode: ${pincode}`,
-  ]
-    .filter(Boolean)
-    .join(', ')
-
-  const message = [
-    `🐟 *The-Fish-Merchant – New Order*`,
-    `Order ID: *${orderId}*`,
-    ``,
-    `👤 *Customer Details*`,
-    `Name: ${name}`,
-    `Phone: +91 ${phone}`,
-    ``,
-    `📦 *Order Items*`,
-    itemLines,
-    ``,
-    `💰 *Bill Summary*`,
-    `Item Total:    ₹${itemTotal}`,
-    state.cart.couponDiscount > 0
-      ? `Coupon (${state.cart.couponCode}): -₹${state.cart.couponDiscount}`
-      : null,
-    `📍 *Delivery Address*`,
-    addressLine,
-  ]
-    .filter((line) => line !== null)
-    .join('\n')
-
-  // Encode and open WhatsApp
-  const waURL = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(message)}`
-  window.open(waURL, '_blank')
-
-  // Save order locally and clear cart
+  // Create order
   const newOrder = {
-    id: orderId,
-    userId: window.appData.currentUser.id || 'guest',
+    id: `ORD${String(window.appData.orders.length + 1).padStart(3, '0')}`,
+    userId: window.appData.currentUser.id,
     customerName: name,
     customerPhone: `+91 ${phone}`,
-    address: addressLine,
+    address: `${address}, ${pincode}`,
     items: state.cart.items.map((item) => ({
       productId: item.id,
       name: item.name,
@@ -1186,23 +1024,26 @@ function sendOrderToWhatsApp() {
     })),
     itemTotal,
     deliveryFee,
+    packingFee,
+    gst,
     discount: state.cart.couponDiscount,
     totalAmount,
-    // deliverySlot: deliveryOption?.description || 'Tomorrow 6AM – 8AM',
+    deliverySlot: deliveryOption?.description || 'Tomorrow 6AM - 8AM',
     deliveryType: state.deliveryOption,
     status: 'pending',
     paymentMethod: 'COD',
     createdAt: new Date().toISOString(),
   }
+
   window.appData.orders.push(newOrder)
 
   // Clear cart
   state.cart = { items: [], couponCode: null, couponDiscount: 0 }
   updateCartUI()
 
-  showToast('Opening WhatsApp with your order! 🎉', 'success')
+  showToast('Order placed successfully! Order ID: ' + newOrder.id, 'success')
 
-  // Navigate to account/orders after a brief delay
+  // Navigate to account/orders
   setTimeout(() => {
     navigateTo('account')
     showOrders()
@@ -1354,12 +1195,17 @@ function closeModal(modalId) {
 }
 
 function useCurrentLocation() {
-  requestGPSLocation(({ address, pincode }) => {
-    window.appData.deliveryLocation.fromGPS = true
-    const display = address.split(',').slice(-2).join(',').trim()
-    document.getElementById('delivery-address').textContent = display || address
+  showToast('Using current location...', 'success')
+  setTimeout(() => {
+    window.appData.deliveryLocation = {
+      address: 'Mumbai, 400001',
+      pincode: '400001',
+      city: 'Mumbai',
+    }
+    document.getElementById('delivery-address').textContent =
+      window.appData.deliveryLocation.address
     closeModal('location-modal')
-  })
+  }, 1000)
 }
 
 function setLocation() {
