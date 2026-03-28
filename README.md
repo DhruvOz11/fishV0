@@ -4,7 +4,6 @@ the fish merchant is a full-stack quick-commerce web application designed for on
 
 <img width="627" height="863" alt="image" src="https://github.com/user-attachments/assets/90f754c6-2ea0-48fc-b7e0-40198a7e683c" />
 <img width="656" height="871" alt="image" src="https://github.com/user-attachments/assets/63352bf6-a112-471d-8d2b-3f7820955a9c" />
-<img width="656" height="871" alt="image" src="https://github.com/user-attachments/assets/5acff5f2-1dda-4826-bbc6-822e4cd4e4f3" />
 <img width="1919" height="851" alt="image" src="https://github.com/user-attachments/assets/516a8682-d5c7-49b8-9a63-00b7e8df7e29" />
 <img width="1919" height="844" alt="image" src="https://github.com/user-attachments/assets/d3696d77-1922-4a52-b671-2ace9c83ef4c" />
 <img width="1919" height="852" alt="image" src="https://github.com/user-attachments/assets/f2f1e82a-4736-4d39-9567-f760db72e04b" />
