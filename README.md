@@ -25,48 +25,48 @@ the fish merchant is a full-stack quick-commerce web application designed for on
 
 
 **Frontend:**
-HTML, CSS, JavaScript (Vanilla JS SPA architecture)
-Custom state management (no framework)
-Dynamic rendering (products, cart, categories)
-Frontend:
-HTML, CSS, JavaScript (Vanilla JS SPA architecture)
-Custom state management (no framework)
-Dynamic rendering (products, cart, categories)
-**Backend:**
-Node.js + Express.js
-RESTful API architecture
-**Database:**
-MongoDB Atlas (cloud database)
-**Integrations:**
-WhatsApp API (order confirmation flow)
-OpenStreetMap (GPS + reverse geocoding)
-Fetch API (async data handling)
-**Dev Tools:**
-Nodemon (auto-restart backend)
-Postman (API testing)
-Node.js + Express.js
-RESTful API architecture
-**Database:**
-MongoDB Atlas (cloud database)
-**Integrations:**
-WhatsApp API (order confirmation flow)
-OpenStreetMap (GPS + reverse geocoding)
-Fetch API (async data handling)
-**Dev Tools:**
-Nodemon (auto-restart backend)
-Postman (API testing)
+HTML, CSS, JavaScript (Vanilla JS SPA architecture) <br>
+Custom state management (no framework) <br>
+Dynamic rendering (products, cart, categories) <br>
+**Frontend**: <br>
+HTML, CSS, JavaScript (Vanilla JS SPA architecture) <br>
+Custom state management (no framework) <br>
+Dynamic rendering (products, cart, categories) <br>
+**Backend:** <br>
+Node.js + Express.js <br>
+RESTful API architecture <br>
+**Database:** <br>
+MongoDB Atlas (cloud database) <br>
+**Integrations:** <br>
+WhatsApp API (order confirmation flow) <br>
+OpenStreetMap (GPS + reverse geocoding) <br>
+Fetch API (async data handling) <br>
+**Dev Tools:** <br>
+Nodemon (auto-restart backend) <br>
+Postman (API testing) <br>
+Node.js + Express.js <br>
+RESTful API architecture <br>
+**Database:** <br>
+MongoDB Atlas (cloud database) <br>
+**Integrations:** <br>
+WhatsApp API (order confirmation flow) <br>
+OpenStreetMap (GPS + reverse geocoding) <br>
+Fetch API (async data handling) <br>
+**Dev Tools:** <br>
+Nodemon (auto-restart backend) <br>
+Postman (API testing) <br>
 
-⚙️ **4. Key Features**
-🛒 Customer Side:
-Product browsing (fish, prawns, ready-to-cook)
-Dynamic cart system
-Coupon system
-GPS-based delivery address detection
-WhatsApp order placement
-Order tracking & history
-🧑‍💼 **Admin Side:**
-Inventory management (stock, expiry tracking)
-Order lifecycle management
-Analytics dashboard
-Coupon & settings control
-Customer issue handling
+⚙️ **4. Key Features** <br>
+🛒 Customer Side: <br>
+Product browsing (fish, prawns, ready-to-cook) <br>
+Dynamic cart system <br>
+Coupon system <br>
+GPS-based delivery address detection <br>
+WhatsApp order placement <br>
+Order tracking & history <br>
+🧑‍💼 **Admin Side:** <br>
+Inventory management (stock, expiry tracking) <br>
+Order lifecycle management <br>
+Analytics dashboard <br>
+Coupon & settings control <br>
+Customer issue handling <br>
