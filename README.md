@@ -2,6 +2,11 @@ This application is made for a local seafood wholeseller based in Surat, Gujarat
 
 the fish merchant is a full-stack quick-commerce web application designed for online seafood ordering with real-time delivery workflows, admin management, and WhatsApp-based order confirmation. It simulates a production-grade system similar to platforms like Licious but tailored for rapid delivery and local operations.
 
+<img width="1919" height="851" alt="image" src="https://github.com/user-attachments/assets/516a8682-d5c7-49b8-9a63-00b7e8df7e29" />
+<img width="1919" height="844" alt="image" src="https://github.com/user-attachments/assets/d3696d77-1922-4a52-b671-2ace9c83ef4c" />
+<img width="1919" height="852" alt="image" src="https://github.com/user-attachments/assets/f2f1e82a-4736-4d39-9567-f760db72e04b" />
+
+
 
 **Frontend:**
 HTML, CSS, JavaScript (Vanilla JS SPA architecture)
