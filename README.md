@@ -4,11 +4,11 @@ the fish merchant is a full-stack quick-commerce web application designed for on
 
 <h3>Home Page</h3>
 <p>hero slider, catagory option</p>
-<img width="627" height="863" alt="image" src="https://github.com/user-attachments/assets/90f754c6-2ea0-48fc-b7e0-40198a7e683c" />
+<img width="300" alt="image" src="https://github.com/user-attachments/assets/90f754c6-2ea0-48fc-b7e0-40198a7e683c" />
 <br><hr><br>
 <h3>Discount & coupons</h3>
 <p>tap on coupon to avail discount</p>
-<img width="656" height="871" alt="image" src="https://github.com/user-attachments/assets/63352bf6-a112-471d-8d2b-3f7820955a9c" />
+<img width="300" alt="image" src="https://github.com/user-attachments/assets/63352bf6-a112-471d-8d2b-3f7820955a9c" />
 <br><hr><br>
 <h3>Admin Dashboard</h3>
 <p>Product management, Data Analysis, Order Management, Issue Resolution, Controls to modify home page(user can modify hero section sliders & link them to different product/ catagory as per choice), Discount &  coupon section (business owner can offer various coupons and discount from his side) , catagory modification & more</p>
